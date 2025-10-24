@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Core;
+
+use Symfony\Component\HttpFoundation\Response;
+
+class Database
+{
+    private \PDO $conn;
+
+    public function __construct()
+    {
+        $config = [
+            'host'    => $_ENV['DB_HOST'],
+            'port'    => 3306,
+            'dbname'  => $_ENV['DB_NAME'],
+            'charset' => 'utf8mb4'
+        ];
+
+        $dsn = 'mysql:' . http_build_query($config, '', ';');
+
+        $user = $_ENV['DB_USER'];
+        $pass = $_ENV['DB_PASS'];
+
+        $options = [
+            \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_EMULATE_PREPARES   => false
+        ];
+
+        try {
+            $this->conn = new \PDO($dsn, $user, $pass, $options);
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Database connection failed: ' . $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getConnection(): \PDO
+    {
+        return $this->conn;
+    }
+}
